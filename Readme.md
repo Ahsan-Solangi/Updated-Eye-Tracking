@@ -21,4 +21,7 @@ This is a bug in MediaPipe. They didn't account for how Windows handles C runtim
 2nd Problem
 Created 4 3 files and modified 4th one (Calibration.py, gaze_estimation.py, visualization.py and mediapipe_new_model.py but the calibration accuracy is very poor. Grouping these in a folder named "P1" and trying out other scripts for better accuracy)
 
+Solved by creating a seperate "gaze_calibration.py", added calibration technique using two dots, one for optical axis (predicted gaze using center of the eye) the other one is for visual axis (actual gaze, user-specific), added accuracy measures but it's not working yet. Integrated pre-trained model: Blendshapes (face_blendshapes.tflite) [very useful for deepfake detection]. The traction needs alot of improvements but is working fine for now, going to add heart rate monitor
+
+
 [Run gaze_calibration.py for now, I'm working on the folder structure aswell]
