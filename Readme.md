@@ -20,3 +20,5 @@ This is a bug in MediaPipe. They didn't account for how Windows handles C runtim
 
 2nd Problem
 Created 4 3 files and modified 4th one (Calibration.py, gaze_estimation.py, visualization.py and mediapipe_new_model.py but the calibration accuracy is very poor. Grouping these in a folder named "P1" and trying out other scripts for better accuracy)
+
+[Run gaze_calibration.py for now, I'm working on the folder structure aswell]
