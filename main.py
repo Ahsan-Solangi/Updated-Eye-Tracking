@@ -1,30 +1,22 @@
-import cv2 as cv
 import mediapipe as mp
-import numpy as np
-mp_drawing = mp.solutions.drawing_utils
-mp_drawing_styles = mp.solutions.drawing_styles
 
+BaseOptions = mp.tasks.BaseOptions
+FaceLandmarker = mp.tasks.vision.FaceLandmarker
+FaceLandmarkerOptions = mp.tasks.vision.FaceLandmarkerOptions
+FaceLandmarkerResult = mp.tasks.vision.FaceLandmarkerResult
+VisionRunningMode = mp.tasks.vision.RunningMode
 
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
+model_path = "D:\\PoC and Paper Implementation\\face_landmarker.task"
 
-#Detector
-options = vision.FaceDetectorOptions(
-    base_options=python.BaseOptions(model_asset_path="face_detection_short_range.tflite"),
-    running_mode=vision.RunningMode.live_stream,
-    min_detection_confidence=0.5
-)
+# Create a face landmarker instance with the live stream mode:
+def print_result(result: FaceLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
+    print('face landmarker result: {}'.format(result))
 
-detector = vision.FaceDetector.create_from_options(options)
+options = FaceLandmarkerOptions(
+    base_options=BaseOptions(model_asset_path=model_path),
+    running_mode=VisionRunningMode.LIVE_STREAM,
+    result_callback=print_result)
 
-cap = cv.VideoCapture(0)
-
-#Results
-for detection in detection_result.detections:
-    bbox = detection.bounding_box                               # .origin_x, .origin_y, .width, .height
-    keypoints = detection.keypoints                             # list of 6 NormalizedKeypoint (eyes, nose, mouth, ears)
-    print("Bounding box:", bbox)
-    print("Keypoints:", keypoints)
-
-    confidence = detection.categories[0].score    
-    print("Confidence:", confidence)
+# with FaceLandmarker.create_from_options(options) as landmarker:
+  # The landmarker is initialized. Use it here.
+  # ...

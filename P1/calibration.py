@@ -13,12 +13,13 @@ def run_calibration(landmarker, gaze_estimator):
 
     Returns calibration coefficients dict, or None if cancelled.
     """
-    # Get screen resolution
-    temp = cv.namedWindow("calibration", cv.WND_PROP_FULLSCREEN)
-    cv.setWindowProperty("calibration", cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+    # Window size for calibration
+    win_w = 800
+    win_h = 600
+    cv.namedWindow("calibration", cv.WINDOW_NORMAL)
+    cv.resizeWindow("calibration", win_w, win_h)
 
-    # We need a frame to detect screen size — use a black canvas first
-    # Get screen dimensions from the window
+    # Get actual screen resolution for gaze mapping
     screen_w = 1920
     screen_h = 1080
     try:
@@ -28,11 +29,11 @@ def run_calibration(landmarker, gaze_estimator):
     except Exception:
         pass
 
-    # 3x3 grid of calibration points with margin
-    margin_x = int(screen_w * 0.1)
-    margin_y = int(screen_h * 0.1)
-    cols = [margin_x, screen_w // 2, screen_w - margin_x]
-    rows = [margin_y, screen_h // 2, screen_h - margin_y]
+    # 3x3 grid of calibration points within the window
+    margin_x = int(win_w * 0.1)
+    margin_y = int(win_h * 0.1)
+    cols = [margin_x, win_w // 2, win_w - margin_x]
+    rows = [margin_y, win_h // 2, win_h - margin_y]
 
     calibration_points = []
     for y in rows:
@@ -64,7 +65,6 @@ def run_calibration(landmarker, gaze_estimator):
         ),
         running_mode=vision.RunningMode.VIDEO,
         num_faces=1,
-        refine_landmarks=True,
     )
     cal_landmarker = mp.tasks.vision.FaceLandmarker.create_from_options(cal_options)
 
@@ -83,7 +83,7 @@ def run_calibration(landmarker, gaze_estimator):
             result = cal_landmarker.detect_for_video(mp_image, frame_count)
 
             # Draw calibration screen
-            canvas = np.zeros((screen_h, screen_w, 3), dtype=np.uint8)
+            canvas = np.zeros((win_h, win_w, 3), dtype=np.uint8)
 
             # Draw the target dot
             cv.circle(canvas, (px, py), 20, (0, 255, 0), -1)
@@ -92,8 +92,8 @@ def run_calibration(landmarker, gaze_estimator):
             # Instructions
             text = f"Look at the green dot and press SPACE ({i + 1}/9)"
             text_size = cv.getTextSize(text, cv.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0]
-            text_x = (screen_w - text_size[0]) // 2
-            cv.putText(canvas, text, (text_x, screen_h - 40),
+            text_x = (win_w - text_size[0]) // 2
+            cv.putText(canvas, text, (text_x, win_h - 40),
                        cv.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
             cv.imshow("calibration", canvas)
@@ -116,10 +116,11 @@ def run_calibration(landmarker, gaze_estimator):
     cv.destroyWindow("calibration")
 
     # Compute mapping: gaze ratios → screen coordinates
+    # Scale calibration points from window coords to screen coords
     h_ratios = np.array([r[0] for r in collected_ratios])
     v_ratios = np.array([r[1] for r in collected_ratios])
-    screen_xs = np.array([p[0] for p in calibration_points])
-    screen_ys = np.array([p[1] for p in calibration_points])
+    screen_xs = np.array([p[0] * screen_w / win_w for p in calibration_points])
+    screen_ys = np.array([p[1] * screen_h / win_h for p in calibration_points])
 
     # Fit a 2nd-degree polynomial for each axis
     x_coeffs = np.polyfit(h_ratios, screen_xs, 2)
